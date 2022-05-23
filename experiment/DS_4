@@ -1,0 +1,93 @@
+//学校组织同学们接种新冠疫苗，需要统计同学们空闲的时间段，故需要统计人数最多的时间段，从而调配疫苗的供应量。
+//空闲时间被分为了N个时间段，其中N可能会非常大，可以假设N为1亿，也就是100000000（这要求程序不能声明长度为N的数组或定义N个变量），若未考虑此情况则不能得分。
+//
+//首先输入两个数字N，M，表示N个空闲时间段，M个学生。接着程序输入M行，每行两个数字，表示第i名同学空闲时间的开始时间段与终止时间段。
+//其中1≤N≤100000000 ， 1≤M≤1000。 程序输出成对的数字，表示空闲人数最多时间段的起始时间和终止时间，如若有多对，请以递增形式在一行中输出。
+//不同对之间用英文逗号“,”分隔，对内元素用空格隔开。 当两个时间段的空闲学生不完全一致时，我们认为其为不同时间段。如若完全一致，则为相同时间段。
+
+
+#include<stdio.h>
+
+int Change(int* a, int low, int high) {     //返回存放中枢元素的索引位置
+    int mid = a[low];                       //初始化索引mid
+    while (low < high) {
+        while (low<high && a[high]>mid)
+            high--;
+        a[low] = a[high];
+        while (low < high && a[low] <= mid)
+            low++;
+        a[high] = a[low];
+    }
+    a[low] = mid;
+    return low;
+}
+void Quick_sort(int* a, int low, int high) {
+    if (low < high) {
+        int mid = Change(a, low, high);             //mid为索引
+        Quick_sort(a, low, mid - 1);
+        Quick_sort(a, mid + 1, high);
+    }
+}
+
+int main() {
+    int M, N;
+    scanf("%d %d", &N, &M);
+    int start[M], end[M];
+    for (int i = 0; i < M; i++) {
+        scanf("%d %d", &start[i], &end[i]);
+    }
+    Quick_sort(start, 0, M - 1);
+    Quick_sort(end, 0, M - 1);
+    int d[M * 2], c[M * 2];
+    for (int i = 0; i < M * 2; i++) {
+        c[i] = 0;
+    }
+    int i = 0, j = 0, k = 0;
+    for (; k < M * 2; k++)
+    {
+        if (start[i] <= end[j] && i < M && j < M) {
+            d[k] = start[i];
+            i++;
+            c[k] = 1;
+        }
+        else if (start[i] > end[j] && i < M && j < M) {
+            d[k] = end[j];
+            j++;
+        }
+        else if (i == M) {
+            d[k] = end[j];
+            j++;
+        }
+        else if (j == M) {
+            d[k] = start[i];
+            i++;
+            c[k] = 1;
+        }
+    }
+    int count = 0, max = 0;
+    for (int i = 0; i < M * 2; i++) {
+        if (c[i] == 1)    count++;
+        else     count--;
+        if (count > max)    max = count;
+    }
+
+    int e[10];
+    for (int i = 0; i < 10; i++)    e[i] = -1;
+    count = 0;
+
+    for (int i = 0, j = 0; i < M * 2; i++) {
+        if (c[i] == 1)  count++;
+        else    count--;
+        if (count == max) {
+            e[j] = i;
+            j++;
+        }
+    }
+    for (int i = 0; e[i] != -1; i++) {                  //输出
+        if (i > 0) {
+            printf(",%d %d", d[e[i]], d[e[i] + 1]);     //，的情况
+        }
+        else
+            printf("%d %d", d[e[i]], d[e[i] + 1]);
+    }
+}
